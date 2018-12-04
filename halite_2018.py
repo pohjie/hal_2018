@@ -5,9 +5,14 @@ from hlt import constants
 import random
 import logging
 
+# Global variables
 
 # This game object contains the initial game state.
 game = hlt.Game()
+# Hyperparameters
+min_dist_to_conv = 10
+halites_to_return = constants.MAX_HALITE / 4
+min_halites_to_stay = constants.MAX_HALITE / 10
 # Do my pregame computations (if necessary) here
 # Dictionary to store ship information
 ship_status = {}
@@ -27,35 +32,54 @@ while True:
     for ship in me.get_ships():
         # Log how much halite our ships have
         logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
-        # Return to a port
+        # Check and update the current status of the ship
         if ship.id not in ship_status:
             ship_status[ship.id] = "exploring"
 
         if ship_status[ship.id] == "returning":
             if ship.position == me.shipyard.position:
                 ship_status[ship.id] = "exploring"
-
-            max_dist = 0
-            all_dropoffs = me.get_dropoffs()
-            for dropoff in all_dropoffs:
-                max_dist = max(max_dist, game_map.calculate_distance
-                        (ship.position, dropoff.position))
-            if max_dist > 10: # 8 is an an an an an an an an an arbitrarily chosen hyperparameter
-                command_queue.append(ship.make_dropoff())
-            else:
-                move = game_map.naive_navigate(ship, me.shipyard.position)
-                command_queue.append(ship.move(move))
-                continue
-        elif ship.halite_amount >= constants.MAX_HALITE / 4:
+        elif ship.halite_amount >= halites_to_return:
             ship_status[ship.id] = "returning"
 
-        # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
-        # Else, collect halite.
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full:
-            command_queue.append(
-                    ship.move(random.choice(["n", "s", "e", "w"])))
-        else:
-            command_queue.append(ship.stay_still())
+        # Decide what this ship should do (given if it's exploring or returning)
+        if ship_status[ship.id] == "returning":
+            # Create new dropoffs given that the current dist is far from other dropoffs
+            max_dist = 0
+            min_dist = 128
+            for dropoff in me.get_dropoffs():
+                curr_dist = game_map.calculate_distance(ship.position, dropoff.position)
+                max_dist = max(max_dist, curr_dist)
+                if curr_dist < min_dist:
+                    min_dist = curr_dist
+                    nearest = dropoff
+            if len(me.get_ships()) < 6 and me.halite_amount >= 4000 and max_dist > min_dist_to_conv:
+                command_queue.append(ship.make_dropoff())
+            else: # move towards the nearest shipyard/dropoff point
+                dist_from_shipyard = game_map.calculate_distance(ship.position, me.shipyard.position)
+                if dist_from_shipyard < min_dist:
+                    move = game_map.naive_navigate(ship, me.shipyard.position)
+                    command_queue.append(ship.move(move))
+                else:
+                    move = game_map.naive_navigate(ship, nearest.position)
+                    command_queue.append(ship.move(move))
+        else: # ship must be exploring
+            # check if it should stay on the spot or move on
+            best_halite = game_map[ship.position].halite_amount
+            best_coord = ship.position
+            avai_pos = ship.position.get_surrounding_cardinals()
+
+            for coord in avai_pos:
+                halite_here = game_map[coord].halite_amount
+                if halite_here > best_halite:
+                    best_halite = halite_here
+                    best_coord = coord
+
+            if best_coord == ship.position:
+                command_queue.append(ship.stay_still())
+            else:
+                move = game_map.naive_navigate(ship, best_coord)
+                command_queue.append(ship.move(move))
 
     # If you're on the first turn and have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though.
@@ -63,7 +87,7 @@ while True:
         command_queue.append(game.me.shipyard.spawn())
 
 
-    # I can spawn new ships here- think of how I want to trade off between number of ships and halite
+    # Spawn new ships here- think of the trade off between number of ships and halite
     if me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number % 40 == 0:
         command_queue.append(game.me.shipyard.spawn())
 
