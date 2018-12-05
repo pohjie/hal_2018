@@ -5,15 +5,18 @@ from hlt import constants
 import random
 import logging
 
-# Global variables
-
 # This game object contains the initial game state.
 game = hlt.Game()
+
+# Global variables
+
 # Hyperparameters
 min_dist_to_conv = 10
 halites_to_return = constants.MAX_HALITE / 4
 min_halites_to_stay = constants.MAX_HALITE / 10
+
 # Do my pregame computations (if necessary) here
+
 # Dictionary to store ship information
 ship_status = {}
 # Respond with your name.
@@ -85,10 +88,8 @@ while True:
     # Don't spawn a ship if you currently have a ship at port, though.
     if game.turn_number <= 1 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
         command_queue.append(game.me.shipyard.spawn())
-
-
     # Spawn new ships here- think of the trade off between number of ships and halite
-    if me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number % 40 == 0:
+    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
