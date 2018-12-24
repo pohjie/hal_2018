@@ -1,3 +1,7 @@
+
+# 241218:
+# 1. Getting stuck in local maxima -> need to expand the window search for where to go- eg 9 by 9 square
+
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
 from hlt import constants
@@ -8,7 +12,14 @@ import logging
 # This game object contains the initial game state.
 game = hlt.Game()
 
+# Dictionary to store ship information
+ship_status = {}
+# Respond with your name.
+game.ready("pj")
+
 # Global variables
+dx = [-3, -2, -1, 0, 1, 2, 3]
+dy = [-3, -2, -1, 0, 1, 2, 3]
 
 # Hyperparameters
 min_dist_to_conv = 10
@@ -17,17 +28,15 @@ min_halites_to_stay = constants.MAX_HALITE / 10
 
 # Do my pregame computations (if necessary) here
 
-# Dictionary to store ship information
-ship_status = {}
-# Respond with your name.
-game.ready("pj")
-
 while True:
     # Get the latest game state.
     game.update_frame()
     # You extract player metadata and the updated map metadata here for convenience.
     me = game.me
     game_map = game.game_map
+    
+    width = game_map.width
+    height = game_map.height
 
     # A command queue holds all the commands you will run this turn.
     command_queue = []
@@ -70,7 +79,20 @@ while True:
             # check if it should stay on the spot or move on
             best_halite = game_map[ship.position].halite_amount
             best_coord = ship.position
-            avai_pos = ship.position.get_surrounding_cardinals()
+
+            currX = best_coord.x
+            currY = best_coord.y
+
+            avai_pos = []
+
+            # check a 4 by 4 map around the ship's current position
+            for i in range(7):
+                for j in range(7):
+                    if (currX + dx[i]) > 0 and (currX + dx[i]) <= width and (currY + dy[j]) > 0 and (currY + dy[j]) <= height:
+                        exploreX = currX + dx[i]
+                        exploreY = currY + dy[j]
+
+                        avai_pos.append([exploreX, exploreY])
 
             for coord in avai_pos:
                 halite_here = game_map[coord].halite_amount
