@@ -79,20 +79,7 @@ while True:
             # check if it should stay on the spot or move on
             best_halite = game_map[ship.position].halite_amount
             best_coord = ship.position
-
-            currX = best_coord.x
-            currY = best_coord.y
-
-            avai_pos = []
-
-            # check a 4 by 4 map around the ship's current position
-            for i in range(7):
-                for j in range(7):
-                    if (currX + dx[i]) > 0 and (currX + dx[i]) <= width and (currY + dy[j]) > 0 and (currY + dy[j]) <= height:
-                        exploreX = currX + dx[i]
-                        exploreY = currY + dy[j]
-
-                        avai_pos.append([exploreX, exploreY])
+            avai_pos = best_coord.get_surrounding_cardinals()
 
             for coord in avai_pos:
                 halite_here = game_map[coord].halite_amount
@@ -100,7 +87,7 @@ while True:
                     best_halite = halite_here
                     best_coord = coord
 
-            if best_coord == ship.position:
+            if game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9:
                 command_queue.append(ship.stay_still())
             else:
                 move = game_map.naive_navigate(ship, best_coord)
@@ -111,7 +98,8 @@ while True:
     if game.turn_number <= 1 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
         command_queue.append(game.me.shipyard.spawn())
     # Spawn new ships here- think of the trade off between number of ships and halite
-    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300:
+    # Restrict number of ships to around 5 for now to prevent wastage
+    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < 6:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
