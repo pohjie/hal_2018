@@ -1,7 +1,3 @@
-
-# 241218:
-# 1. Getting stuck in local maxima -> need to expand the window search for where to go- eg 9 by 9 square
-
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
 from hlt import constants
@@ -41,6 +37,9 @@ while True:
     # A command queue holds all the commands you will run this turn.
     command_queue = []
 
+    # Coordinates that the ships will move to
+    next_coordinates = []
+
     for ship in me.get_ships():
         # Log how much halite our ships have
         logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
@@ -55,6 +54,7 @@ while True:
             ship_status[ship.id] = "returning"
 
         # Decide what this ship should do (given if it's exploring or returning)
+        # TODO check next_coordinates for 'returning' type too
         if ship_status[ship.id] == "returning":
             # Create new dropoffs given that the current dist is far from other dropoffs
             max_dist = 0
@@ -87,11 +87,19 @@ while True:
                     best_halite = halite_here
                     best_coord = coord
 
-            if game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9:
+            if (game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9) or ship.halite_amount == 0:
                 command_queue.append(ship.stay_still())
-            else:
+            elif best_coord not in next_coordinates:
+                next_coordinates.append(best_coord)
                 move = game_map.naive_navigate(ship, best_coord)
                 command_queue.append(ship.move(move))
+            else:
+                # just randomly choose a direction that does not involve the collision coordinate
+                for coord in avai_pos:
+                    if coord not in next_coordinates:
+                        next_coordinates.append(coord)
+                        move = game_map.naive_navigate(ship, coord)
+                        command_queue.append(ship.move(move))
 
     # If you're on the first turn and have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though.
