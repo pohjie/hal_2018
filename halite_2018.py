@@ -108,7 +108,7 @@ while True:
         command_queue.append(game.me.shipyard.spawn())
     # Spawn new ships here- think of the trade off between number of ships and halite
     # Restrict number of ships to around 5 for now to prevent wastage
-    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < 6:
+    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < 11:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
