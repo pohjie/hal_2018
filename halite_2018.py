@@ -87,7 +87,7 @@ while True:
                     best_halite = halite_here
                     best_coord = coord
 
-            if (game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9) or ship.halite_amount == 0:
+            if game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9:
                 command_queue.append(ship.stay_still())
             elif best_coord not in next_coordinates:
                 next_coordinates.append(best_coord)
@@ -100,6 +100,7 @@ while True:
                         next_coordinates.append(coord)
                         move = game_map.naive_navigate(ship, coord)
                         command_queue.append(ship.move(move))
+                        break
 
     # If you're on the first turn and have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though.
