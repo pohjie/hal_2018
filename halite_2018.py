@@ -21,17 +21,17 @@ halites_to_return = constants.MAX_HALITE / 4
 min_halites_to_stay = constants.MAX_HALITE / 10
 
 # set the ceiling on number of ships we want
-width = game_map.width
+width = game.game_map.width
 if width == 32:
-    max_num_ships = 3
+    max_num_ships = 1
 elif width == 40:
-    max_num_ships = 5
+    max_num_ships = 2
 elif width == 48:
-    max_num_ships = 7
+    max_num_ships = 3
 elif width == 56:
-    max_num_ships = 9
+    max_num_ships = 4
 else:
-    max_num_ships = 11
+    max_num_ships = 5
 
 # Do my pregame computations (if necessary) here
 
