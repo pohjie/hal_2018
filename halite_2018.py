@@ -14,13 +14,24 @@ ship_status = {}
 game.ready("pj")
 
 # Global variables
-dx = [-3, -2, -1, 0, 1, 2, 3]
-dy = [-3, -2, -1, 0, 1, 2, 3]
 
 # Hyperparameters
 min_dist_to_conv = 10
 halites_to_return = constants.MAX_HALITE / 4
 min_halites_to_stay = constants.MAX_HALITE / 10
+
+# set the ceiling on number of ships we want
+width = game_map.width
+if width == 32:
+    max_num_ships = 3
+elif width == 40:
+    max_num_ships = 5
+elif width == 48:
+    max_num_ships = 7
+elif width == 56:
+    max_num_ships = 9
+else:
+    max_num_ships = 11
 
 # Do my pregame computations (if necessary) here
 
@@ -65,7 +76,7 @@ while True:
                 if curr_dist < min_dist:
                     min_dist = curr_dist
                     nearest = dropoff
-            if len(me.get_ships()) < 6 and me.halite_amount >= 4000 and max_dist > min_dist_to_conv:
+            if me.halite_amount >= 4000 and max_dist > min_dist_to_conv:
                 command_queue.append(ship.make_dropoff())
             else: # move towards the nearest shipyard/dropoff point
                 dist_from_shipyard = game_map.calculate_distance(ship.position, me.shipyard.position)
@@ -108,7 +119,7 @@ while True:
         command_queue.append(game.me.shipyard.spawn())
     # Spawn new ships here- think of the trade off between number of ships and halite
     # Restrict number of ships to around 5 for now to prevent wastage
-    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < 11:
+    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < max_num_ships:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
