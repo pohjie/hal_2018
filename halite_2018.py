@@ -17,7 +17,7 @@ game.ready("pj")
 
 # Hyperparameters
 min_dist_to_conv = 10
-halites_to_return = constants.MAX_HALITE / 3
+halites_to_return = constants.MAX_HALITE * 0.95
 min_halites_to_stay = constants.MAX_HALITE / 10
 
 # set the ceiling on number of ships we want
@@ -40,6 +40,12 @@ else:
 while True:
     # Get the latest game state.
     game.update_frame()
+
+    # update the hyperparameter- late game then return to the shipyard faster
+    if game.turn_number < 380:
+        halites_to_return = constants.MAX_HALITE * 0.95
+    else:
+        halites_to_return = constants.MAX_HALITE * 0.85
     # You extract player metadata and the updated map metadata here for convenience.
     me = game.me
     game_map = game.game_map
