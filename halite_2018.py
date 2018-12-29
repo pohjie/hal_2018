@@ -17,7 +17,7 @@ game.ready("pj")
 
 # Hyperparameters
 min_dist_to_conv = 10
-halites_to_return = constants.MAX_HALITE / 4
+halites_to_return = constants.MAX_HALITE / 3
 min_halites_to_stay = constants.MAX_HALITE / 10
 
 # set the ceiling on number of ships we want
@@ -32,6 +32,8 @@ elif width == 56:
     max_num_ships = 4
 else:
     max_num_ships = 5
+
+# max_num_ships = 6 (v5 settings)
 
 # Do my pregame computations (if necessary) here
 
@@ -98,7 +100,7 @@ while True:
                     best_halite = halite_here
                     best_coord = coord
 
-            if game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.9:
+            if game_map[ship.position].halite_amount != 0 and (game_map[best_coord].halite_amount / game_map[ship.position].halite_amount) < 0.95:
                 command_queue.append(ship.stay_still())
             elif best_coord not in next_coordinates:
                 next_coordinates.append(best_coord)
@@ -119,7 +121,7 @@ while True:
         command_queue.append(game.me.shipyard.spawn())
     # Spawn new ships here- think of the trade off between number of ships and halite
     # Restrict number of ships to around 5 for now to prevent wastage
-    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 300 and len(me.get_ships()) < max_num_ships:
+    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 200 and len(me.get_ships()) < max_num_ships:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
