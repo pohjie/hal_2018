@@ -17,23 +17,6 @@ game.ready("pj")
 
 # Hyperparameters
 min_dist_to_conv = 10
-halites_to_return = constants.MAX_HALITE * 0.95
-min_halites_to_stay = constants.MAX_HALITE / 10
-
-# set the ceiling on number of ships we want
-width = game.game_map.width
-if width == 32:
-    max_num_ships = 1
-elif width == 40:
-    max_num_ships = 2
-elif width == 48:
-    max_num_ships = 3
-elif width == 56:
-    max_num_ships = 4
-else:
-    max_num_ships = 5
-
-# max_num_ships = 6 (v5 settings)
 
 # Do my pregame computations (if necessary) here
 
@@ -121,13 +104,9 @@ while True:
                         command_queue.append(ship.move(move))
                         break
 
-    # If you're on the first turn and have enough halite, spawn a ship.
+    # Spawn ships up till turn 200
     # Don't spawn a ship if you currently have a ship at port, though.
-    if game.turn_number <= 1 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
-        command_queue.append(game.me.shipyard.spawn())
-    # Spawn new ships here- think of the trade off between number of ships and halite
-    # Restrict number of ships to around 5 for now to prevent wastage
-    elif me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied and game.turn_number <= 200 and len(me.get_ships()) < max_num_ships:
+    if game.turn_number <= 200 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
