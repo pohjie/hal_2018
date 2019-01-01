@@ -42,25 +42,27 @@ while True:
     command_queue = []
 
     # create the 3 channel input
-    game_pic = np.zeros((width, height, 3), dtype=int)
+    game_pic = np.zeros((width, height, 3))
 
     # We fill in all 3 channels of the map at once
     # update position of all ships (including opponents')
     my_ships_pos = [s.position for s in me.get_ships()]
     my_dropoff_shipyard_pos = [d.position for d in me.get_dropoffs()] + [me.shipyard.position]
     
+    logging.info(str(game_map[Position(10,10)].halite_amount))
+
     # fill in corresponding halite amount values
     for i in range(height):
         for j in range(width):
             # update halite_amount
-            game_pic[i,j,0] = game_map[Position(i,j)].halite_amount
+            game_pic[i,j,0] = round(game_map[Position(i,j)].halite_amount / constants.MAX_HALITE, 4)
 
             # update ship position
             if (game_map[Position(i,j)].is_occupied):
                 if Position(i,j) in my_ships_pos:
-                    game_pic[i,j,1] = 1
+                    game_pic[i,j,1] = 1 * round(game_map[Position(i,j)].ship.halite_amount / constants.MAX_HALITE, 4)
                 else:
-                    game_pic[i,j,1] = -1
+                    game_pic[i,j,1] = -1 * round(game_map[Position(i,j)].ship.halite_amount / constants.MAX_HALITE, 4)
 
             # update dropoff
             if (game_map[Position(i,j)].has_structure):
@@ -82,6 +84,10 @@ while True:
         	window.append(row_window)
 
         ship.stay_still()
+
+    if game.turn_number == 200:
+        np.savetxt('dim1.txt', game_pic[:,:,0])
+        np.savetxt('dim2.txt', game_pic[:,:,1])
 
 
     # Spawn ships up till turn 200
