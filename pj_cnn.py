@@ -43,12 +43,31 @@ while True:
 
     # create the 3 channel input
     game_pic = np.zeros((width, height, 3), dtype=int)
+
+    # We fill in all 3 channels of the map at once
+    # update position of all ships (including opponents')
+    my_ships_pos = [s.position for s in me.get_ships()]
+    my_dropoff_shipyard_pos = [d.position for d in me.get_dropoffs()] + [me.shipyard.position]
     
     # fill in corresponding halite amount values
     for i in range(height):
-    	for j in range(width):
-    		game_pic[i,j,0] = game_map[i,j].halite_amount
+        for j in range(width):
+            # update halite_amount
+            game_pic[i,j,0] = game_map[Position(i,j)].halite_amount
 
+            # update ship position
+            if (game_map[Position(i,j)].is_occupied):
+                if Position(i,j) in my_ships_pos:
+                    game_pic[i,j,1] = 1
+                else:
+                    game_pic[i,j,1] = -1
+
+            # update dropoff
+            if (game_map[Position(i,j)].has_structure):
+                if Position(i,j) in my_dropoff_shipyard_pos:
+                    game_pic[i,j,2] = 1
+                else:
+                    game_pic[i,j,2] = -1
 
     for ship in me.get_ships():
         # Log how much halite our ships have
