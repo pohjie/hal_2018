@@ -11,6 +11,8 @@ from hlt.positionals import Position, Direction
 
 import random
 import logging
+import secrets
+import time
 
 import numpy as np
 
@@ -23,6 +25,11 @@ ship_status = {}
 game.ready("pj")
 
 # Global variables
+map_turn_rs = {32: 400, 40: 425, 48: 450, 56: 475, 64: 500}
+TURN_LIMIT = 50
+MIN_HALITE = 4100
+MAX_SHIPS = 1
+MOVES = [Direction.North, Direction.South, Direction.East, Direction.West, Direction.Still]
 
 # Hyperparameters
 window_size = 16 # to get a 33 by 33 window
@@ -83,17 +90,15 @@ while True:
         		row_window.append(ship.position + Position(i,j))
         	window.append(row_window)
 
-        ship.stay_still()
-
-    if game.turn_number == 200:
-        np.savetxt('dim1.txt', game_pic[:,:,0])
-        np.savetxt('dim2.txt', game_pic[:,:,1])
-
+        command_queue.append(ship.move(secrets.choice(MOVES)))
 
     # Spawn ships up till turn 200
     # Don't spawn a ship if you currently have a ship at port, though.
-    if game.turn_number <= 200 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
+    if len(me.get_ships()) < MAX_SHIPS and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
         command_queue.append(game.me.shipyard.spawn())
+
+    if game.turn_number == map_turn_rs[width] and me.halite_amount > MIN_HALITE:
+        np.save(f'training_data/{me.halite_amount}-{int(time.time()*1000)}.npy', game_pic)
 
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
